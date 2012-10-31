@@ -67,11 +67,13 @@ public class DocxChanger
         WordprocessingMLPackage wordprocessingMLPackage)
     throws Exception
     {
-        //HeaderPart headerPart = new HeaderPart();
         HeaderPart headerPart = wordprocessingMLPackage.getHeaderFooterPolicy().getDefaultHeader();
+        if (headerPart == null)
+        {
+            headerPart = new HeaderPart();
+        }
 
-        // Have to do this so that the next line can
-        // add an image
+        // Have to do this so that the next line can add an image
         headerPart.setPackage(wordprocessingMLPackage);
         headerPart.setJaxbElement(getHdr(wordprocessingMLPackage, headerPart));
         return wordprocessingMLPackage.getMainDocumentPart().addTargetPart(headerPart);
@@ -82,7 +84,11 @@ public class DocxChanger
         HeaderPart sourcePart)
     throws Exception
     {
-        Hdr hdr = sourcePart.getJaxbElement();//objectFactory.createHdr();
+        Hdr hdr = sourcePart.getJaxbElement();
+        if (hdr == null)
+        {
+            hdr = objectFactory.createHdr();
+        }
         hdr.getEGBlockLevelElts().add(newImage(wordprocessingMLPackage, sourcePart, getBytes(), "filename", "alttext", 1, 2));
         return hdr;
     }
@@ -95,24 +101,26 @@ public class DocxChanger
         long length = file.length();
         // You cannot create an array using a long type.
         // It needs to be an int type.
-        if (length > Integer.MAX_VALUE) {
-            System.out.println("File too large!!");
+        if (length > Integer.MAX_VALUE)
+        {
+            System.err.println("File too large!!");
         }
         byte[] bytes = new byte[(int) length];
         int offset = 0;
         int numRead = 0;
         while (offset < bytes.length
-                && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+               && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0)
+        {
             offset += numRead;
         }
         // Ensure all the bytes have been read in
-        if (offset < bytes.length) {
-            System.out.println("Could not completely read file " + file.getName());
+        if (offset < bytes.length)
+        {
+            System.err.println("Could not completely read file " + file.getName());
         }
         is.close();
 
         return bytes;
-
     }
 
     public org.docx4j.wml.P newImage(
