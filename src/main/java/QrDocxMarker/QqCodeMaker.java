@@ -36,16 +36,15 @@ public class QqCodeMaker
      * Constructor.
      */
     public QqCodeMaker(
-            String codeData,
-            String outFile
-    )
+        String codeData,
+        String outFile)
     {
         this.codeData = codeData;
         this.outFile = outFile;
     }
 
     public void createQrCode()
-            throws QrException
+    throws QrException
     {
         Charset charset = Charset.forName(CODESET);
         CharsetEncoder encoder = charset.newEncoder();

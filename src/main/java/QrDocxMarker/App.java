@@ -10,7 +10,7 @@ public class App
 {
     public static void main( String[] args )
     {
-        if (args.length != 4)
+        if (args.length < 4)
         {
             if (args.length == 1 && args[0].equals("test"))
             {
@@ -26,12 +26,17 @@ public class App
         String qrFile = args[1];
         String docxFile = args[2];
         String docxFileOut = args[3];
+        String overData = null;
+        if (args.length > 4)
+        {
+            overData = args[4];
+        }
 
         try
         {
             QqCodeMaker qrC = new QqCodeMaker(qrData, qrFile);
             qrC.createQrCode();
-            DocxChanger docxC = new DocxChanger(docxFile, qrFile, docxFileOut);
+            DocxChanger docxC = new DocxChanger(docxFile, qrFile, docxFileOut, overData);
             docxC.addHeaderImage();
             new File(qrFile).delete();
         }

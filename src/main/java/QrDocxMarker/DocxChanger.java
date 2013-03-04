@@ -1,6 +1,7 @@
 package QrDocxMarker;
 
 import java.io.File;
+import java.util.StringTokenizer;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -9,7 +10,11 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.*;
+import org.docx4j.wml.Hdr;
+import org.docx4j.wml.HdrFtrRef;
+import org.docx4j.wml.HeaderReference;
+import org.docx4j.wml.ObjectFactory;
+import org.docx4j.wml.SectPr;
 
 /**
  * @author Andrey V. Markelov
@@ -36,18 +41,25 @@ public class DocxChanger
      */
     private String outFilePath;
 
+    /**
+     * Extra data to new page.
+     */
+    private String overData;
+
     /*
      * Constructor.
      */
     public DocxChanger(
         String filePath,
         String imagePath,
-        String outFilePath)
+        String outFilePath,
+        String overData)
     {
         this.filePath = filePath;
         this.imagePath = imagePath;
         this.outFilePath = outFilePath;
         this.objectFactory = new ObjectFactory();
+        this.overData = overData;
     }
 
     public void addHeaderImage()
@@ -57,8 +69,41 @@ public class DocxChanger
         File outFile = new File(outFilePath);
         WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(file);
         MainDocumentPart mainDocumentPart = wordMLPackage.getMainDocumentPart();
-        Relationship relationship = createHeaderPart(wordMLPackage);
 
+        if (overData != null && overData.length() > 0)
+        {
+            mainDocumentPart.addParagraphOfText("\n");
+            mainDocumentPart.addStyledParagraphOfText("Title", "Согласовали:");
+
+            StringTokenizer st = new StringTokenizer(overData, ",");
+            int count = 0;
+            while (st.hasMoreTokens())
+            {
+                String token = st.nextToken();
+                switch (count)
+                {
+                    case 0:
+                        mainDocumentPart.addParagraphOfText("Согласование от руководителя ЦФО:" + token);
+                        break;
+                    case 1:
+                        mainDocumentPart.addParagraphOfText("Согласование от СБ:" + token);
+                        break;
+                    case 2:
+                        mainDocumentPart.addParagraphOfText("Согласование от ЮС:" + token);
+                        break;
+                    case 3:
+                        mainDocumentPart.addParagraphOfText("Согласование от Бухгалтерии:" + token);
+                        break;
+                    case 4:
+                        mainDocumentPart.addParagraphOfText("Согласование от ФО:" + token);
+                        break;
+                }
+
+                count++;
+            }
+        }
+
+        Relationship relationship = createHeaderPart(wordMLPackage);
         createHeaderReference(wordMLPackage, relationship);
         wordMLPackage.save(outFile);
     }
